@@ -1,6 +1,6 @@
 // Require the necessary discord.js classes
 const { Client, Intents, Guild, MessageAttachment } = require('discord.js');
-const { DISCORD_TOKEN, TO_PARSE_ID } = require("./config.json");
+// const { DISCORD_TOKEN, TO_PARSE_ID } = require("./config.json");
 
 // MD to PDF
 const fs = require('fs');
