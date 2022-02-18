@@ -50,7 +50,6 @@ client.on('interactionCreate', async interaction => {
 
 	switch(commandName) {
 		case "parse":
-			await interaction.reply('Parsing...');
 			await interaction.deferReply();
 			parse_channel(interaction, interaction.channelId, process.env.TO_PARSE_ID); // #testing
 			await interaction.reply('Finished!');
