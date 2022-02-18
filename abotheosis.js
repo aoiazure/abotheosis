@@ -48,7 +48,7 @@ client.on('interactionCreate', async interaction => {
 
 	switch(commandName) {
 		case "parse":
-			await interaction.deferReply();
+			await interaction.deferReply({ ephemeral: true });
 			parse_channel(interaction, interaction.channelId, process.env.TO_PARSE_ID); // #testing
 			await interaction.editReply('Finished!');
 			break;
