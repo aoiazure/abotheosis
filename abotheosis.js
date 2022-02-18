@@ -25,10 +25,9 @@ const parse_channel = (interaction, interactionId, parse_id) => {
 	const parse_text = (author, content) => {
 		text += `# ${author}:\n` + `${content}\n\n`;
 	}
-	channel.messages.fetch({  }).then(messages => { // limit: 100
+	channel.messages.fetch({ limit:99999 }).then(messages => { // limit: 100
 		messages = messages.reverse();
-		console.log(`Received ${messages.size} messages`);
-		interaction.reply({ content:`We're doing it! Received ${messages.size}.`, ephemeral:true });
+		interaction.reply({ content:`Parsing ${messages.size} in this channel.`, ephemeral:true });
 		//Iterate through the messages here with the variable "messages".
 		messages.forEach(message => parse_text(message.author.username, message.content))
 		
