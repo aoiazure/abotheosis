@@ -50,6 +50,7 @@ client.on('interactionCreate', async interaction => {
 		case "parse":
 			await interaction.deferReply();
 			parse_channel(interaction, interaction.channelId, process.env.TO_PARSE_ID); // #testing
+			await interaction.editReply('Finished!');
 			break;
 	}
 });
