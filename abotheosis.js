@@ -38,8 +38,6 @@ async function parse_channel (interaction, interactionId, parse_id) {
 		})
 		.then(console.log)
 		.catch(console.error)
-	
-		
 }
 
 // Work with commands
@@ -52,7 +50,6 @@ client.on('interactionCreate', async interaction => {
 		case "parse":
 			await interaction.deferReply();
 			parse_channel(interaction, interaction.channelId, process.env.TO_PARSE_ID); // #testing
-			await interaction.reply('Finished!');
 			break;
 	}
 });
