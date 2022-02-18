@@ -49,7 +49,7 @@ client.on('interactionCreate', async interaction => {
 	switch(commandName) {
 		case "parse":
 			await interaction.deferReply();
-			parse_channel(interaction, interaction.channelId, TO_PARSE_ID); // #testing
+			parse_channel(interaction, interaction.channelId, process.env.TO_PARSE_ID); // #testing
 			break;
 	}
 });
