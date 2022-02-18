@@ -1,6 +1,6 @@
 // Require the necessary discord.js classes
 const { Client, Intents, Guild, MessageAttachment } = require('discord.js');
-const { token, to_parse_id } = require("./config.json");
+const { DISCORD_TOKEN, TO_PARSE_ID } = require("./config.json");
 
 // MD to PDF
 const fs = require('fs');
@@ -55,7 +55,7 @@ client.on('interactionCreate', async interaction => {
 
 	switch(commandName) {
 		case "parse":
-			parse_channel(interaction, interaction.channelId, to_parse_id); // #testing
+			parse_channel(interaction, interaction.channelId, process.env.TO_PARSE_ID); // #testing
 			break;
 		case "kill":
 			await console.log('Good-bye, cruel world.');
@@ -65,4 +65,4 @@ client.on('interactionCreate', async interaction => {
 });
 
 // Login to Discord with your client's token
-client.login(token);
+client.login(process.env.DISCORD_TOKEN);
