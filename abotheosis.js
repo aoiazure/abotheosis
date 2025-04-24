@@ -1,59 +1,61 @@
 // Require the necessary discord.js classes
-const { Client, Intents, Guild, MessageAttachment } = require('discord.js');
-// const { DISCORD_TOKEN, TO_PARSE_ID } = require("./config.json");
-
-const fetchAll = require('discord-fetch-all');
+require('dotenv').config();
+const fs = require('node:fs');
+const path = require('node:path');
+const { Client, Collection, Events, GatewayIntentBits, Message, MessageFlags } = require('discord.js');
+const { messages } = require('discord-fetch-all');
 
 // Create a new client instance
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+
+// Load commands
+client.commands = new Collection();
+
+const foldersPath = path.join(__dirname, 'commands');
+const commandFolders = fs.readdirSync(foldersPath);
+
+for (const folder of commandFolders) {
+	const commandsPath = path.join(foldersPath, folder);
+	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+	for (const file of commandFiles) {
+		const filePath = path.join(commandsPath, file);
+		const command = require(filePath);
+		// Set a new item in the Collection with the key as the command name and the value as the exported module
+		if ('data' in command && 'execute' in command) {
+			client.commands.set(command.data.name, command);
+		} else {
+			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+		}
+	}
+}
 
 // When the client is ready, run this code (only once)
-client.once('ready', () => {
+client.once(Events.ClientReady, readyClient => {
 	console.log(`Ready! Logged in as ${client.user.tag}`);
 });
 
-async function parse_channel (interaction, interactionId, parse_id) {
+// Work with commands
+client.on(Events.InteractionCreate, async interaction => {
+	if (!interaction.isChatInputCommand()) return;
 	
-	const channel = client.channels.cache.get(parse_id);
-	const message_channel = client.channels.cache.get(interactionId);
-	
-	let text = "";
+	const command = interaction.client.commands.get(interaction.commandName);
 
-	const parse_text = (author, content) => {
-		text += `# ${author}:\n` + `${content}\n\n`;
+	if (!command) {
+		console.error(`No command matching ${interaction.commandName} was found.`);
+		return;
 	}
 
-	const allMessages = await fetchAll.messages(channel, { reverseArray: true })
-	allMessages.forEach(message => parse_text(message.author.username, message.content))
-		
-	//// Still have access to all of text
-	const m = new MessageAttachment( Buffer.from(text, 'utf-8'), `${new Date().toLocaleString()}-text.md` );
-
-	// send message
-	message_channel.send({
-			content:`Save the Markdown file (.md) and use https://stackedit.io/app# to prettify it.`,
-			files: [
-				m // file attachment
-			],
-		})
-		.then(console.log)
-		.catch(console.error)
-}
-
-// Work with commands
-client.on('interactionCreate', async interaction => {
-	if(!interaction.isCommand()) return;
-
-	const { commandName }  = interaction;
-
-	switch(commandName) {
-		case "parse":
-			await interaction.deferReply({ ephemeral: true });
-			parse_channel(interaction, interaction.channelId, process.env.TO_PARSE_ID); // #testing
-			await interaction.editReply('Finished!');
-			break;
+	try {
+		await command.execute(interaction);
+	} catch (error) {
+		console.error(error);
+		if (interaction.replied || interaction.deferred) {
+			await interaction.followUp({ content: 'Error while executing command!', flags: MessageFlags.Ephemeral });
+		} else {
+			await interaction.reply({ content: 'Error while executing command!', flags: MessageFlags.Ephemeral });
+		}
 	}
 });
 
 // Login to Discord with your client's token
-client.login(process.env.DISCORD_TOKEN);
+client.login(process.env.TOKEN);

@@ -1,26 +1,41 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { REST } = require('@discordjs/rest');
-const { Routes } = require('discord-api-types/v9');
-const { parse } = require('dotenv');
-const { clientId, guildId, token } = require('./config.json');
+require('dotenv').config();
+const { REST, Routes } = require('discord.js');
+const fs = require('node:fs');
+const path = require('node:path');
 
-const parse_command = new SlashCommandBuilder()
-    .setName('parse')
-    .setDescription('Attempt to upload a formatted document of the channel.')
-    
-const kill_command = new SlashCommandBuilder()
-	.setName('kill')
-	.setDescription('Terminate the bot. Bye bye!')
+const commands = [];
 
-const commands = [
-    parse_command,
-]
-	.map(command => command.toJSON());
+const foldersPath = path.join(__dirname, 'commands');
+const commandFolders = fs.readdir(foldersPath);
 
-const rest = new REST({ version: '9' }).setToken(token);
+for (const folder of commandFolders) {
+	const commandsPath = path.join(foldersPath, folder);
+	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+	for (const file of commandFiles) {
+		const filePath = path.join(commandsPath, file);
+		const command = require(filePath);
+		// Set a new item in the Collection with the key as the command name and the value as the exported module
+		if ('data' in command && 'execute' in command) {
+			client.commands.set(command.data.name, command);
+		} else {
+			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+		}
+	}
+}
 
-rest.put(
-    Routes.applicationCommands(clientId), 
-    { body: commands })
-	.then(() => console.log('Successfully registered application commands.'))
-	.catch(console.error);
+const rest = new REST().setToken(process.env.TOKEN);
+(async () => {
+	try {
+		console.log(`Started refreshing ${commands.length} application (/) commands.`);
+
+		// The put method is used to fully refresh all commands in the guild with the current set
+		const data = await rest.put(
+			Routes.applicationGuildCommands(clientId, guildId),
+			{ body: commands },
+		);
+
+		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+	} catch (error) {
+		console.error(error);
+	}
+})();
