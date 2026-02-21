@@ -1,12 +1,10 @@
 // Require the necessary discord.js classes
-require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Collection, Events, GatewayIntentBits, Message, MessageFlags } = require('discord.js');
-const { messages } = require('discord-fetch-all');
+const { Client, Collection, Events, GatewayIntentBits, Message, MessageFlags, Partials } = require('discord.js');
 
 // Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds], partials: [Partials.Channel] });
 
 // Load commands
 client.commands = new Collection();
@@ -58,4 +56,4 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 // Login to Discord with your client's token
-client.login(process.env.TOKEN);
+client.login(process.env.DISCORD_TOKEN);

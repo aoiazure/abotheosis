@@ -1,1 +1,1 @@
-worker: node .
+worker: node --env-file=.env abotheosis.js

@@ -1,4 +1,4 @@
-const { MessageAttachment, SlashCommandBuilder, AttachmentBuilder, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, AttachmentBuilder, MessageFlags, ChannelType } = require('discord.js');
 const { messages } = require('discord-fetch-all');
 const { mdToPdf } = require('md-to-pdf');
 
@@ -6,11 +6,18 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('parse')
 		.setDescription('Attempt to upload a formatted document of the channel.')
+		.addChannelOption((option) => 
+			option
+				.setName('channel')
+				.setDescription('The channel to parse and save')
+				.addChannelTypes(ChannelType.GuildText)
+				.setRequired(true))
 		,
 	async execute(interaction) {
 		await interaction.reply({content: "Running..!", flags: MessageFlags.Ephemeral });
 		const client = interaction.client;
 		const parseChannel = client.channels.cache.get(process.env.CHANNEL_TO_PARSE_ID);
+		// const parseChannel = interaction.options.getChannel('channel');
 		const interactionChannel = client.channels.cache.get(interaction.channelId);
 		
 		let text = "";
